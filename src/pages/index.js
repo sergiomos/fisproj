@@ -1,118 +1,185 @@
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
+import { useState } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const plank = 6.626E-34
+const m = 1.673E-27
+
+const calcularK = (n, largura) => Math.round(n * Math.PI / largura)
+const calcularA = (largura) => Math.round((2 / largura) ** 0.5)
+const calcularE = (n, l) => n ** 2 * plank ** 2 / (8 * m * l ** 2);
+const paraEV = () => 2;
+const calcularF = () => 2
+const calcularC = () => 2
+const calcularV = () => 2
+const calcularB = () => 2
+const calcularP = () => 2
+
 export default function Home() {
+  const [largura, setLargura] = useState();
+  const [ni, setNi] = useState();
+  const [nf, setNf] = useState();
+  const [a, setA] = useState();
+  const [b, setB] = useState();
+  const [result, setResult] = useState({
+    a: 0,
+    kNi: 0,
+    kNf: 0,
+    energiaJ: 0,
+    energiaEV: 0,
+    frequencia: 0,
+    comprimentoDeOnda: 0,
+    velocidade: 0,
+    ondaDeBroglie: 0,
+    probabilidade: 0
+  })
+
+  const limpar = () => {
+    const inputs = document.getElementsByTagName('input');
+
+    for (let i = 0; i < inputs.length; i++) {
+      inputs[i].value = "";
+    }
+  }
+
+  const calcular = (e) => {
+    e.preventDefault();
+    setResult({
+      a: calcularA(largura),
+      kNi: calcularK(ni, largura),
+      kNf: calcularK(nf, largura),
+      energiaJ: calcularE(ni, largura),
+      energiaEV: calcularE(nf, largura),
+      frequencia: calcularF(),
+      comprimentoDeOnda: calcularC(),
+      velocidade: calcularV(),
+      ondaDeBroglie: calcularB(),
+      probabilidade: calcularP()
+    })
+    limpar()
+  }
+
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <div className='h-screen'>
+      <header className='px-8 py-4 shadow'><h1 className='text-cyan-300 text-lg font-bold'>A Dança das Particulas</h1></header>
+      <main className='flex justify-center h-screen'>
+        <section className='bg-slate-100 flex justify-center items-center py-8 w-screen'>
+          <form className='w-80' onSubmit={calcular}>
+            <fieldset className='flex flex-col gap-4'>
+              <label className='flex flex-col gap-2'>
+                Largura da caixa
+                <input type='number' className='rounded h-10 px-4 shadow' onChange={({ target }) => setLargura(target.value)} required></input>
+              </label>
+              <label className='flex flex-col gap-2'>
+                Nível inicial da partícula
+                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setNi(target.value)} required></input>
+              </label>
+              <label className='flex flex-col gap-2'>
+                Nível final da partícula
+                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setNf(target.value)} required></input>
+              </label>
+            </fieldset>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+            <h3 className='font-bold text-lg text-violet-600 mt-8'>Dados para probabilidade</h3>
+            <strong>P a menor igual a x menor igual a b</strong>
+            <fieldset className='flex flex-col gap-4 mt-4 mb-8'>
+              <label className='flex flex-col gap-2'>
+                A
+                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setA(target.value)} required></input>
+              </label>
+              <label className='flex flex-col gap-2'>
+                B
+                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setB(target.value)} required></input>
+              </label>
+            </fieldset>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+            <fieldset className='flex justify-between'>
+              <button type='submit' className='rounded-sm bg-pink-300 text-slate-50 px-8 py-2 font-bold uppercase text-sm'>calcular</button>
+              <button type='button' className='rounded-sm bg-pink-300 text-slate-50 px-8 py-2 font-bold uppercase text-sm' onClick={limpar}>limpar</button>
+            </fieldset>
+          </form>
+        </section>
+        <section className='flex justify-center items-center py-8 w-screen'>
+          <ul className='flex flex-col gap-2'>
+            <li className='flex justify-between gap-4'>
+              <span>
+                Função de onda quântica Ni:
+              </span>
+              <span className='font-bold'>ψ(x) = {result.a} * sen({result.kNi}*x)
+              </span>
+            </li>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+            <li className='flex justify-between'>
+              <span>
+                Função de onda quântica Nf:
+              </span>
+              <span className='font-bold'>ψ(x) = {result.a} * sen({result.kNf}*x)
+              </span>
+            </li>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
+            <li className='flex justify-between'>
+              <span>
+                Energia:
+              </span>
+              <span className='font-bold'>{result.energiaEV} eV</span>
+            </li>
+            <li className='flex justify-between'>
+              <span>
+                Energia:
+              </span>
+              <span className='font-bold'>{result.energiaJ} J</span>
+            </li>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+            <li className='flex justify-between'>
+              <span>
+                Frequência:
+              </span>
+              <span className='font-bold'>{result.frequencia} Hz</span>
+            </li>
+
+            <li className='flex justify-between'>
+              <span>
+                Comprimento de Onda:
+              </span>
+              <span className='font-bold'>{result.comprimentoDeOnda} m</span>
+            </li >
+
+            <li className='flex justify-between'>
+              <span>
+                Velocidade:
+              </span>
+              <span className='font-bold'>{result.velocidade} m/s</span>
+            </li>
+
+            <li className='flex justify-between'>
+              <span>
+                Comprimento de Onda De Broglie:
+              </span>
+              <span className='font-bold'>{result.ondaDeBroglie} m</span>
+            </li>
+
+            <li className='flex justify-between'>
+              <span>
+                Probabilidade:
+              </span>
+              <span className='font-bold'>{result.probabilidade}%</span>
+            </li>
+
+
+          </ul>
+
+        </section>
+      </main>
+      <footer className='bg-zinc-800 text-slate-50 text-center py-3'>
+        <strong className='text-pink-500'>Feito Por:</strong>
+        <ul>
+          <li>Sérgio Martins de Olivera Santos - 22.222.021-2</li>
+          <li>Deise Adriana Silva Araujo - 22.222.024-6</li>
+        </ul>
+      </footer>
+    </div>
   )
 }
