@@ -1,40 +1,70 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import Input from '../components/input'
 import { useState } from 'react'
-
-const inter = Inter({ subsets: ['latin'] })
+import { solveODE } from 'mathjs'
 
 const plank = 6.626E-34
 const m = 1.673E-27
+const hev = 4.136E-15
+const hj = 6.626E-34
+const c = 3E8
+
+const precise = (n) => n.toPrecision(3)
 
 const calcularK = (n, largura) => Math.round(n * Math.PI / largura)
 const calcularA = (largura) => Math.round((2 / largura) ** 0.5)
-const calcularE = (n, l) => n ** 2 * plank ** 2 / (8 * m * l ** 2);
-const paraEV = () => 2;
-const calcularF = () => 2
-const calcularC = () => 2
-const calcularV = () => 2
-const calcularB = () => 2
-const calcularP = () => 2
+const calcularE = (n, l) => precise(n ** 2 * plank ** 2 / (8 * m * l ** 2));
+const paraEV = (n) => precise(n * 6.242E18);
+const calcularF = (e) => 2
+const calcularC = (e) => precise(hev * c / e)
+const calcularV = (e) => Math.sqrt(2 * e / m)
+const calcularB = (e) => hj / Math.sqrt(2 * m * e)
+const f = x => (2 / (n * Math.PI)) * Math.sin(x) ** 2;
+const calcularT = (l, n, p) => (n * Math.PI / l) * p
+
+function integral(a, b, n) {
+  const h = (b - a) / n;
+  let soma = 0;
+  for (let i = 0; i < n; i++) {
+    soma += (2 / (n * Math.PI)) * Math.sin(a + i * h) ** 2;
+  }
+  return soma * h;
+}
+
 
 export default function Home() {
-  const [largura, setLargura] = useState();
-  const [ni, setNi] = useState();
-  const [nf, setNf] = useState();
-  const [a, setA] = useState();
-  const [b, setB] = useState();
+  const calcularP = (ifi, ini) => solveODE(f, ifi, ini);
+  const [largura, setLargura] = useState(0.27e-9);
+  const [ni, setNi] = useState(1);
+  const [nf, setNf] = useState(6);
+  const [a, setA] = useState(0.0405e-9);
+  const [b, setB] = useState(0.203e-9);
   const [result, setResult] = useState({
     a: 0,
     kNi: 0,
     kNf: 0,
+    energiaIJ: 0,
+    energiaIEV: 0,
+    energiaFJ: 0,
+    energiaFEV: 0,
     energiaJ: 0,
     energiaEV: 0,
     frequencia: 0,
     comprimentoDeOnda: 0,
-    velocidade: 0,
-    ondaDeBroglie: 0,
+    velocidadeI: 0,
+    velocidadeF: 0,
+    ondaDeBroglieI: 0,
+    ondaDeBroglieF: 0,
     probabilidade: 0
   })
+
+  const teste = (n, l, a, b) => {
+    const ti = calcularT(l, n, a)
+    const tf = calcularT(l, n, b)
+
+    return (integral(tf, ti, n) * 100).toPrecision(2)
+
+  }
+
 
   const limpar = () => {
     const inputs = document.getElementsByTagName('input');
@@ -50,13 +80,20 @@ export default function Home() {
       a: calcularA(largura),
       kNi: calcularK(ni, largura),
       kNf: calcularK(nf, largura),
-      energiaJ: calcularE(ni, largura),
-      energiaEV: calcularE(nf, largura),
-      frequencia: calcularF(),
-      comprimentoDeOnda: calcularC(),
-      velocidade: calcularV(),
-      ondaDeBroglie: calcularB(),
-      probabilidade: calcularP()
+      energiaIJ: calcularE(ni, largura),
+      energiaIEV: paraEV(calcularE(ni, largura)),
+      energiaFJ: calcularE(nf, largura),
+      energiaFEV: paraEV(calcularE(nf, largura)),
+      energiaJ: calcularE(nf, largura) - calcularE(ni, largura),
+      energiaEV: paraEV(calcularE(nf, largura) - calcularE(ni, largura)),
+      frequencia: calcularF(paraEV(calcularE(nf, largura) - calcularE(ni, largura))),
+      comprimentoDeOnda: calcularC(paraEV(calcularE(nf, largura) - calcularE(ni, largura))),
+      velocidadeI: calcularV(calcularE(ni, largura)),
+      velocidadeF: calcularV(calcularE(nf, largura)),
+      ondaDeBroglieI: calcularB(calcularE(ni, largura)),
+      ondaDeBroglieF: calcularB(calcularE(nf, largura)),
+      probabilidadeI: teste(ni, largura, a, b),
+      probabilidadeF: teste(nf, largura, a, b)
     })
     limpar()
   }
@@ -69,31 +106,36 @@ export default function Home() {
         <section className='bg-slate-100 flex justify-center items-center py-8 w-screen'>
           <form className='w-80' onSubmit={calcular}>
             <fieldset className='flex flex-col gap-4'>
-              <label className='flex flex-col gap-2'>
-                Largura da caixa
-                <input type='number' className='rounded h-10 px-4 shadow' onChange={({ target }) => setLargura(target.value)} required></input>
-              </label>
-              <label className='flex flex-col gap-2'>
-                Nível inicial da partícula
-                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setNi(target.value)} required></input>
-              </label>
-              <label className='flex flex-col gap-2'>
-                Nível final da partícula
-                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setNf(target.value)} required></input>
-              </label>
+              <Input
+                label="Largura da caixa"
+                onChange={setLargura}
+                type="number" value={largura}
+                required />
+              <Input
+                label=" Nível inicial da partícula"
+                onChange={setNi} value={ni}
+                type="number"
+                required />
+              <Input
+                label="Nível final da partícula"
+                onChange={setNf} value={nf}
+                type="number"
+                required />
             </fieldset>
 
             <h3 className='font-bold text-lg text-violet-600 mt-8'>Dados para probabilidade</h3>
             <strong>P a menor igual a x menor igual a b</strong>
             <fieldset className='flex flex-col gap-4 mt-4 mb-8'>
-              <label className='flex flex-col gap-2'>
-                A
-                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setA(target.value)} required></input>
-              </label>
-              <label className='flex flex-col gap-2'>
-                B
-                <input type='number' className='rounded h-10  px-4 shadow' onChange={({ target }) => setB(target.value)} required></input>
-              </label>
+              <Input
+                label="A"
+                onChange={setA}
+                type="number" value={a}
+                required />
+              <Input
+                label="B"
+                onChange={setB}
+                type="number" value={b}
+                required />
             </fieldset>
 
             <fieldset className='flex justify-between'>
@@ -122,13 +164,37 @@ export default function Home() {
 
             <li className='flex justify-between'>
               <span>
-                Energia:
+                Energia Inicial:
+              </span>
+              <span className='font-bold'>{result.energiaIEV} eV</span>
+            </li>
+            <li className='flex justify-between'>
+              <span>
+                Energia Inicial:
+              </span>
+              <span className='font-bold'>{result.energiaIJ} J</span>
+            </li>
+            <li className='flex justify-between'>
+              <span>
+                Energia Final:
+              </span>
+              <span className='font-bold'>{result.energiaFEV} eV</span>
+            </li>
+            <li className='flex justify-between'>
+              <span>
+                Energia Final:
+              </span>
+              <span className='font-bold'>{result.energiaFJ} J</span>
+            </li>
+            <li className='flex justify-between'>
+              <span>
+                Energia Total:
               </span>
               <span className='font-bold'>{result.energiaEV} eV</span>
             </li>
             <li className='flex justify-between'>
               <span>
-                Energia:
+                Energia Total:
               </span>
               <span className='font-bold'>{result.energiaJ} J</span>
             </li>
@@ -149,10 +215,18 @@ export default function Home() {
 
             <li className='flex justify-between'>
               <span>
-                Velocidade:
+                Velocidade Inicial:
               </span>
-              <span className='font-bold'>{result.velocidade} m/s</span>
+              <span className='font-bold'>{result.velocidadeI} m/s</span>
             </li>
+
+            <li className='flex justify-between'>
+              <span>
+                Velocidade Final:
+              </span>
+              <span className='font-bold'>{result.velocidadeF} m/s</span>
+            </li>
+
 
             <li className='flex justify-between'>
               <span>
@@ -163,10 +237,18 @@ export default function Home() {
 
             <li className='flex justify-between'>
               <span>
-                Probabilidade:
+                Probabilidade Ni:
               </span>
-              <span className='font-bold'>{result.probabilidade}%</span>
+              <span className='font-bold'>{result.probabilidadeI}%</span>
             </li>
+
+            <li className='flex justify-between'>
+              <span>
+                Probabilidade Nf:
+              </span>
+              <span className='font-bold'>{result.probabilidadeF}%</span>
+            </li>
+
 
 
           </ul>
