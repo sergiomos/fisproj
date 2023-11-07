@@ -33,11 +33,11 @@ function integral(a, b, n) {
 
 export default function Home() {
   const calcularP = (ifi, ini) => solveODE(f, ifi, ini);
-  const [largura, setLargura] = useState(0.27e-9);
-  const [ni, setNi] = useState(1);
-  const [nf, setNf] = useState(6);
-  const [a, setA] = useState(0.0405e-9);
-  const [b, setB] = useState(0.203e-9);
+  const [largura, setLargura] = useState();
+  const [ni, setNi] = useState();
+  const [nf, setNf] = useState();
+  const [a, setA] = useState();
+  const [b, setB] = useState();
   const [result, setResult] = useState({
     a: 0,
     kNi: 0,
