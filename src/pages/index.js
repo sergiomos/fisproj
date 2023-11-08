@@ -1,19 +1,15 @@
 import Input from '../components/input'
 import { useEffect, useState } from 'react'
-import { solveODE } from 'mathjs'
-
-
 
 export default function Home() {
-  const calcularP = (ifi, ini) => solveODE(f, ifi, ini);
-  const [largura, setLargura] = useState();
-  const [ni, setNi] = useState();
-  const [nf, setNf] = useState();
-  const [a, setA] = useState();
-  const [b, setB] = useState();
-  const [m, setM] = useState(1.673E-27);
-  const [tipoParticula, setTipoParticula] = useState('proton')
-  const [result, setResult] = useState({
+  const [largura, setLargura] = useState("");
+  const [ni, setNi] = useState("");
+  const [nf, setNf] = useState("");
+  const [a, setA] = useState("");
+  const [b, setB] = useState("");
+  const [m, setM] = useState(9.11E-31);
+  const [tipoParticula, setTipoParticula] = useState('eletron')
+  const initialResult = {
     a: 0,
     kNi: 0,
     kNf: 0,
@@ -29,8 +25,10 @@ export default function Home() {
     velocidadeF: 0,
     ondaDeBroglieI: 0,
     ondaDeBroglieF: 0,
-    probabilidade: 0
-  })
+    probabilidadeI: 0,
+    probabilidadeF: 0
+  }
+  const [result, setResult] = useState(initialResult)
 
   useEffect(() => {
     switch (tipoParticula) {
@@ -41,7 +39,7 @@ export default function Home() {
         setM(1.673E-27);
         break;
       default:
-        setM(1.673E-27);
+        setTipoParticula('eletron');
         break;
     }
 
@@ -66,39 +64,29 @@ export default function Home() {
   const calcularB = (e) => precise(hj / Math.sqrt(2 * m * e))
 
 
-  const f = x => (2 / (n * Math.PI)) * Math.sin(x) ** 2;
   const calcularT = (l, n, p) => (n * Math.PI / l) * p
-
-  function integral(a, b, n) {
-    const h = (b - a) / n;
-    let soma = 0;
-    for (let i = 0; i < n; i++) {
-      soma += (2 / (n * Math.PI)) * Math.sin(a + i * h) ** 2;
-    }
-    return soma * h;
-  }
+  const integral = (i, f, n) => (2 * f - 2 * i - Math.sin(2 * f) + Math.sin(2 * i)) / (2 * n * Math.PI)
 
 
   const teste = (n, l, a, b) => {
-    const ti = calcularT(l, n, a)
-    const tf = calcularT(l, n, b)
+    const ti = calcularT(l, n, a);
+    const tf = calcularT(l, n, b);
 
-    return (integral(tf, ti, n) * 100).toPrecision(2)
-
+    return precise(integral(ti, tf, n) * 100);
   }
 
 
   const limpar = () => {
-    const inputs = document.getElementsByTagName('input');
-
-    for (let i = 0; i < inputs.length; i++) {
-      inputs[i].value = "";
-    }
+    setLargura("");
+    setNi("");
+    setNf("");
+    setA("");
+    setB("");
+    setResult(initialResult);
+    setTipoParticula('eletron')
   }
 
   const calcular = (e) => {
-    console.log(m);
-    console.log(tipoParticula);
     e.preventDefault();
     setResult({
       a: calcularA(largura),
@@ -111,7 +99,7 @@ export default function Home() {
       energiaJ: calcularE(nf, largura) - calcularE(ni, largura),
       energiaEV: paraEV(calcularE(nf, largura) - calcularE(ni, largura)),
       frequencia: calcularF(calcularC(paraEV(calcularE(nf, largura) - calcularE(ni, largura)))),
-      comprimentoDeOnda: paraNano(calcularC(paraEV(calcularE(nf, largura) - calcularE(ni, largura)))),
+      comprimentoDeOnda: calcularC(paraEV(calcularE(nf, largura) - calcularE(ni, largura))),
       velocidadeI: calcularV(calcularE(ni, largura)),
       velocidadeF: calcularV(calcularE(nf, largura)),
       ondaDeBroglieI: calcularB(calcularE(ni, largura)),
@@ -119,7 +107,6 @@ export default function Home() {
       probabilidadeI: teste(ni, largura, a, b),
       probabilidadeF: teste(nf, largura, a, b)
     })
-    limpar()
   }
 
 
@@ -138,6 +125,7 @@ export default function Home() {
                     name="tipo_de_particula"
                     value="eletron"
                     onChange={({ target }) => setTipoParticula(target.value)}
+                    checked={tipoParticula == 'eletron' ? true : false}
                   />
                   Elétron
                 </label>
@@ -148,6 +136,7 @@ export default function Home() {
                     name="tipo_de_particula"
                     value="proton"
                     onChange={({ target }) => setTipoParticula(target.value)}
+                    checked={tipoParticula == 'proton' ? true : false}
                   />
                   Proton
                 </label>
@@ -227,6 +216,12 @@ export default function Home() {
               </span>
               <span className='font-bold'>{result.energiaJ} J <span className='font-normal'>ou</span> {result.energiaEV} eV</span>
             </li>
+            <li className='flex justify-between'>
+              <span>
+                Comprimento de Onda:
+              </span>
+              <span className='font-bold'>{result.comprimentoDeOnda} m <span className='font-normal'>ou</span> {paraNano(result.comprimentoDeOnda)} nm</span>
+            </li >
 
             <li className='flex justify-between'>
               <span>
@@ -235,12 +230,7 @@ export default function Home() {
               <span className='font-bold'>{result.frequencia} Hz</span>
             </li>
 
-            <li className='flex justify-between'>
-              <span>
-                Comprimento de Onda:
-              </span>
-              <span className='font-bold'>{result.comprimentoDeOnda} nm</span>
-            </li >
+
 
             <li className='flex justify-between'>
               <span>

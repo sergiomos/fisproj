@@ -9,8 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "algebrite": "^1.4.0",
-    "mathjs": "^12.0.0",
     "next": "14.0.0",
     "react": "^18",
     "react-dom": "^18"
