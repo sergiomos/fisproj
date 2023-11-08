@@ -1,34 +1,7 @@
 import Input from '../components/input'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { solveODE } from 'mathjs'
 
-const plank = 6.626E-34
-const m = 1.673E-27
-const hev = 4.136E-15
-const hj = 6.626E-34
-const c = 3E8
-
-const precise = (n) => n.toPrecision(3)
-
-const calcularK = (n, largura) => Math.round(n * Math.PI / largura)
-const calcularA = (largura) => Math.round((2 / largura) ** 0.5)
-const calcularE = (n, l) => precise(n ** 2 * plank ** 2 / (8 * m * l ** 2));
-const paraEV = (n) => precise(n * 6.242E18);
-const calcularF = (e) => 2
-const calcularC = (e) => precise(hev * c / e)
-const calcularV = (e) => Math.sqrt(2 * e / m)
-const calcularB = (e) => hj / Math.sqrt(2 * m * e)
-const f = x => (2 / (n * Math.PI)) * Math.sin(x) ** 2;
-const calcularT = (l, n, p) => (n * Math.PI / l) * p
-
-function integral(a, b, n) {
-  const h = (b - a) / n;
-  let soma = 0;
-  for (let i = 0; i < n; i++) {
-    soma += (2 / (n * Math.PI)) * Math.sin(a + i * h) ** 2;
-  }
-  return soma * h;
-}
 
 
 export default function Home() {
@@ -38,6 +11,8 @@ export default function Home() {
   const [nf, setNf] = useState();
   const [a, setA] = useState();
   const [b, setB] = useState();
+  const [m, setM] = useState(1.673E-27);
+  const [tipoParticula, setTipoParticula] = useState('proton')
   const [result, setResult] = useState({
     a: 0,
     kNi: 0,
@@ -57,6 +32,53 @@ export default function Home() {
     probabilidade: 0
   })
 
+  useEffect(() => {
+    switch (tipoParticula) {
+      case 'eletron':
+        setM(9.11E-31);
+        break;
+      case 'proton':
+        setM(1.673E-27);
+        break;
+      default:
+        setM(1.673E-27);
+        break;
+    }
+
+  }, [tipoParticula])
+
+
+  const plank = 6.626E-34
+  const hev = 4.136E-15
+  const hj = 6.626E-34
+  const c = 3E8
+
+  const precise = (n) => n.toPrecision(3)
+
+  const calcularK = (n, largura) => precise(Math.round(n * Math.PI / largura))
+  const calcularA = (largura) => precise(Math.round((2 / largura) ** 0.5))
+  const calcularE = (n, l) => precise(n ** 2 * plank ** 2 / (8 * m * l ** 2));
+  const paraEV = (n) => precise(n * 6.242E18);
+  const paraNano = (n) => precise(n / 1e-9)
+  const calcularF = (l) => precise(c / l)
+  const calcularC = (e) => precise((hev * c / e))
+  const calcularV = (e) => precise(Math.round(Math.sqrt(2 * e / m)))
+  const calcularB = (e) => precise(hj / Math.sqrt(2 * m * e))
+
+
+  const f = x => (2 / (n * Math.PI)) * Math.sin(x) ** 2;
+  const calcularT = (l, n, p) => (n * Math.PI / l) * p
+
+  function integral(a, b, n) {
+    const h = (b - a) / n;
+    let soma = 0;
+    for (let i = 0; i < n; i++) {
+      soma += (2 / (n * Math.PI)) * Math.sin(a + i * h) ** 2;
+    }
+    return soma * h;
+  }
+
+
   const teste = (n, l, a, b) => {
     const ti = calcularT(l, n, a)
     const tf = calcularT(l, n, b)
@@ -75,6 +97,8 @@ export default function Home() {
   }
 
   const calcular = (e) => {
+    console.log(m);
+    console.log(tipoParticula);
     e.preventDefault();
     setResult({
       a: calcularA(largura),
@@ -86,8 +110,8 @@ export default function Home() {
       energiaFEV: paraEV(calcularE(nf, largura)),
       energiaJ: calcularE(nf, largura) - calcularE(ni, largura),
       energiaEV: paraEV(calcularE(nf, largura) - calcularE(ni, largura)),
-      frequencia: calcularF(paraEV(calcularE(nf, largura) - calcularE(ni, largura))),
-      comprimentoDeOnda: calcularC(paraEV(calcularE(nf, largura) - calcularE(ni, largura))),
+      frequencia: calcularF(calcularC(paraEV(calcularE(nf, largura) - calcularE(ni, largura)))),
+      comprimentoDeOnda: paraNano(calcularC(paraEV(calcularE(nf, largura) - calcularE(ni, largura)))),
       velocidadeI: calcularV(calcularE(ni, largura)),
       velocidadeF: calcularV(calcularE(nf, largura)),
       ondaDeBroglieI: calcularB(calcularE(ni, largura)),
@@ -106,6 +130,30 @@ export default function Home() {
         <section className='bg-slate-100 flex justify-center items-center py-8 w-screen'>
           <form className='w-80' onSubmit={calcular}>
             <fieldset className='flex flex-col gap-4'>
+              <div className='flex gap-8 justify-center mb-2'>
+                <label for="eletron">
+                  <input
+                    type='radio'
+                    id="eletron"
+                    name="tipo_de_particula"
+                    value="eletron"
+                    onChange={({ target }) => setTipoParticula(target.value)}
+                  />
+                  Elétron
+                </label>
+
+                <label for="proton">
+                  <input type='radio'
+                    id="proton"
+                    name="tipo_de_particula"
+                    value="proton"
+                    onChange={({ target }) => setTipoParticula(target.value)}
+                  />
+                  Proton
+                </label>
+              </div>
+
+
               <Input
                 label="Largura da caixa"
                 onChange={setLargura}
@@ -161,42 +209,23 @@ export default function Home() {
               <span className='font-bold'>ψ(x) = {result.a} * sen({result.kNf}*x)
               </span>
             </li>
-
             <li className='flex justify-between'>
               <span>
-                Energia Inicial:
+                Energia Nível {ni}:
               </span>
-              <span className='font-bold'>{result.energiaIEV} eV</span>
+              <span className='font-bold'>{result.energiaIJ} J <span className='font-normal'>ou</span> {result.energiaIEV} eV</span>
             </li>
             <li className='flex justify-between'>
               <span>
-                Energia Inicial:
+                Energia Nível {nf}:
               </span>
-              <span className='font-bold'>{result.energiaIJ} J</span>
-            </li>
-            <li className='flex justify-between'>
-              <span>
-                Energia Final:
-              </span>
-              <span className='font-bold'>{result.energiaFEV} eV</span>
-            </li>
-            <li className='flex justify-between'>
-              <span>
-                Energia Final:
-              </span>
-              <span className='font-bold'>{result.energiaFJ} J</span>
+              <span className='font-bold'>{result.energiaFJ} J <span className='font-normal'>ou</span> {result.energiaFEV} eV</span>
             </li>
             <li className='flex justify-between'>
               <span>
                 Energia Total:
               </span>
-              <span className='font-bold'>{result.energiaEV} eV</span>
-            </li>
-            <li className='flex justify-between'>
-              <span>
-                Energia Total:
-              </span>
-              <span className='font-bold'>{result.energiaJ} J</span>
+              <span className='font-bold'>{result.energiaJ} J <span className='font-normal'>ou</span> {result.energiaEV} eV</span>
             </li>
 
             <li className='flex justify-between'>
@@ -210,19 +239,19 @@ export default function Home() {
               <span>
                 Comprimento de Onda:
               </span>
-              <span className='font-bold'>{result.comprimentoDeOnda} m</span>
+              <span className='font-bold'>{result.comprimentoDeOnda} nm</span>
             </li >
 
             <li className='flex justify-between'>
               <span>
-                Velocidade Inicial:
+                Velocidade Nível {ni}:
               </span>
               <span className='font-bold'>{result.velocidadeI} m/s</span>
             </li>
 
             <li className='flex justify-between'>
               <span>
-                Velocidade Final:
+                Velocidade Nível {nf}:
               </span>
               <span className='font-bold'>{result.velocidadeF} m/s</span>
             </li>
@@ -230,21 +259,28 @@ export default function Home() {
 
             <li className='flex justify-between'>
               <span>
-                Comprimento de Onda De Broglie:
+                Comprimento de Onda De Broglie Nível {ni}:
               </span>
-              <span className='font-bold'>{result.ondaDeBroglie} m</span>
+              <span className='font-bold'>{result.ondaDeBroglieI} m</span>
             </li>
 
             <li className='flex justify-between'>
               <span>
-                Probabilidade Ni:
+                Comprimento de Onda De Broglie Nível {nf}:
+              </span>
+              <span className='font-bold'>{result.ondaDeBroglieF} m</span>
+            </li>
+
+            <li className='flex justify-between'>
+              <span>
+                Probabilidade Nível {ni}:
               </span>
               <span className='font-bold'>{result.probabilidadeI}%</span>
             </li>
 
             <li className='flex justify-between'>
               <span>
-                Probabilidade Nf:
+                Probabilidade Nível {nf}:
               </span>
               <span className='font-bold'>{result.probabilidadeF}%</span>
             </li>
