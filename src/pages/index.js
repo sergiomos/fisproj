@@ -1,5 +1,6 @@
 import Input from '../components/input'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export default function Home() {
   const [largura, setLargura] = useState("");
@@ -112,7 +113,13 @@ export default function Home() {
 
   return (
     <div className='h-screen'>
-      <header className='px-8 py-4 shadow'><h1 className='text-cyan-300 text-lg font-bold'>A Dança das Particulas</h1></header>
+      <header className='px-8 py-4 shadow flex justify-between'>
+        <h1 className='text-cyan-300 text-lg font-bold'>A Dança das Particulas</h1>
+        <div className='flex gap-8'>
+          <Link href="/" className='rounded-sm bg-pink-200 text-slate-50 px-4 py-2 font-bold uppercase text-sm'>potencial unidimensional</Link>
+          <Link href="/infinito" className='rounded-sm bg-pink-300 text-slate-50 px-4 py-2 font-bold uppercase text-sm'>potencial infinito unidimensional</Link>
+        </div>
+      </header>
       <main className='flex justify-center h-screen'>
         <section className='bg-slate-100 flex justify-center items-center py-8 w-screen'>
           <form className='w-80' onSubmit={calcular}>
