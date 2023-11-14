@@ -82,7 +82,7 @@ export default function Infinito() {
                 type="number"
                 required />
               <Input
-                label="Xp"
+                label="X"
                 onChange={setXp} value={xp}
                 type="number"
                 required />

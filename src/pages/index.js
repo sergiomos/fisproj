@@ -151,7 +151,7 @@ export default function Home() {
 
 
               <Input
-                label="Largura da caixa"
+                label="Largura da caixa (m)"
                 onChange={setLargura}
                 type="number" value={largura}
                 required />
@@ -171,12 +171,12 @@ export default function Home() {
             <strong>P a menor igual a x menor igual a b</strong>
             <fieldset className='flex flex-col gap-4 mt-4 mb-8'>
               <Input
-                label="A"
+                label="A (m)"
                 onChange={setA}
                 type="number" value={a}
                 required />
               <Input
-                label="B"
+                label="B (m)"
                 onChange={setB}
                 type="number" value={b}
                 required />
